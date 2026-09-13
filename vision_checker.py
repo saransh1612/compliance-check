@@ -53,7 +53,8 @@ def build_manual_audit(checklist_responses: Dict[str, Dict[str, Any]]) -> Dict[s
                 "required_compliance": rule["spec"],
                 "observation": obs,
                 "defect_reason": defect_desc,
-                "corrective_action": action
+                "corrective_action": action,
+                "side": section_key
             })
             
     score = int((passed_checks / total_checks) * 100) if total_checks > 0 else 0
@@ -77,11 +78,24 @@ def build_manual_audit(checklist_responses: Dict[str, Dict[str, Any]]) -> Dict[s
         
     summary = "Vehicle passed all mandatory safety & branding specifications." if overall_status == "PASS" else f"Vehicle failed inspection. Rectify {len(critical_violations)} critical defect(s) before release."
     
+    rear_text = [
+        "EIP Board: LIQUIFIED PETROLEUM GAS, UN 1075, HAZCHEM 2WE",
+        "Statutory Dial: POLICE 100, FIRE 101, AMBULANCE 102",
+        "Extinguisher Advice: USE DRY CHEMICAL POWDER TYPE FIRE EXTINGUISHER"
+    ]
+    unauth = []
+    for sec_list in sections.values():
+        for chk in sec_list:
+            if "UNAUTHORIZED" in chk["id"] and chk["status"] != "PASS":
+                unauth.append(f"{chk['name']}: {chk['observation']}")
+    
     return {
         "overall_status": overall_status,
         "compliance_score": score,
         "summary": summary,
         "critical_violations": critical_violations,
+        "rear_text_detected": rear_text,
+        "unauthorized_markings_found": unauth,
         "quantities": {
             "side_panels_detected": side_panels,
             "eip_panels_detected": eip_panels,
@@ -150,7 +164,7 @@ def run_gemini_vision_audit(
 
     prompt = f"""
 You are a Senior Fleet Quality & Safety Compliance Auditor for Bharat Petroleum Corporation Limited (BPCL).
-Your task is to inspect 4 photos of an LPG Packed Cylinder Truck (306 or 450 cylinders) against the official BPCL Guidelines and Specifications for LPG Packed Truck Panels and Stickers.
+Your task is to inspect 4 photos of an LPG Packed Cylinder Truck (306 or 450 cylinders) STRICTLY against the official BPCL Guidelines and Specifications for LPG Packed Truck Panels and Stickers.
 
 The 4 uploaded photos are:
 1. Photo 1: Front View of Truck
@@ -158,38 +172,49 @@ The 4 uploaded photos are:
 3. Photo 3: Right Side (Driver Side) of Truck
 4. Photo 4: Rear / Back View of Truck
 
-The compliance checklist rules and specifications are as follows:
+CHECKLIST RULES FROM BPCL SPECIFICATION DOCUMENT:
 {checklist_summary}
 
-CRITICAL RULES TO VERIFY:
-1. FRONT VIEW:
-   - Must have "GOODS CARRIER" on blue background with Class 2 flammable gas diamond in center (size 310mm x 1490mm) on sunshade/crown.
-   - Must have "Bharat Petroleum" front logo below windshield (160mm x 1300mm).
-   - Must have Class 2 Flammable Gas red diamond (250mm x 250mm) on front bumper/grill.
-   - Front registration plate visible and legible.
-2. LEFT SIDE (Helper Side):
-   - Cabin door must have "Bharatgas" sticker (200mm x 600mm).
-   - Side panel MUST BE IN ENGLISH: "Bharat Petroleum" with BPCL logo on left and yellow/blue wave ribbons (4200mm x 900mm).
-   - Left side MUST have Emergency Information Panel (EIP, 800mm x 600mm) showing UN 1075, HAZCHEM 2WE, emergency numbers (Police 100, Fire 101, Ambulance 102), specialist advice, and Class 2 label.
-3. RIGHT SIDE (Driver Side):
-   - Cabin door must have "Bharatgas" sticker (200mm x 600mm).
-   - Side panel MUST BE IN HINDI: "भारत पेट्रोलियम" in Devanagari script with BPCL logo and wave ribbons (4200mm x 900mm).
-   - Right side MUST also have an Emergency Information Panel (EIP, 800mm x 600mm).
-4. BACK / REAR VIEW:
-   - Must have the 3rd Emergency Information Panel (EIP, 800mm x 600mm) mounted on rear mesh gate.
-   - Must have Class 2 Hazard diamond and reflective safety tape across rear bumper.
-   - Rear registration number plate clearly visible.
-5. QUANTITY CHECK:
-   - Total 2 side panels (1 English Left, 1 Hindi Right).
-   - Total 3 EIP panels (Left, Right, Rear).
-   - Total 2 Bharatgas cabin stickers (Left, Right).
+CRITICAL INSPECTION & DETECTION REQUIREMENTS:
+1. STRICT DOCUMENT COMPLIANCE FOR ALL 4 SIDES:
+   - Front View:
+     * F1: "GOODS CARRIER" (310x1490mm) on royal blue background, bold white lettering, Class 2 flammable gas diamond in center.
+     * F2: "Bharat Petroleum" front logo below windshield (160x1300mm).
+     * F3: Class 2 Flammable Gas red diamond (250x250mm) on front bumper/grill.
+     * F4: Standard BPCL blue & white cabin finish in good repair.
+     * F5: Legible front registration number plate.
+     * F6_UNAUTHORIZED_MARKINGS: Check for ANY unauthorized text, religious symbols (e.g. Om, Swastika, Cross), private slogans, mobile numbers, or unapproved decals on windshield or front cabin.
+   - Left Side (Helper Side):
+     * L1: "Bharatgas" sticker on helper cabin door (200x600mm) with tagline "COOK FOOD. SERVE LOVE.".
+     * L2: Side Main Panel MUST BE IN ENGLISH: "Bharat Petroleum" (4200x900mm ACM sheet) with BPCL logo on left (text length 2700mm) and yellow/blue wave ribbons (Option 2B).
+     * L3: Emergency Information Panel (EIP, 800x600mm) on left rear lower body with: "CORRECT TECHNICAL NAME: LIQUIFIED PETROLEUM GAS", "UN No. 1075", "HAZCHEM 2WE", Emergency dial (Police 100, Fire 101, Ambulance 102), Specialist Advice ("USE DRY CHEMICAL POWDER TYPE FIRE EXTINGUISHER"), Class 2 red diamond.
+     * L4: Cylinder cage frame and clamps.
+     * L5_UNAUTHORIZED_MARKINGS: Check for ANY extraneous paintings, commercial ads, private transporter slogans, or decals.
+   - Right Side (Driver Side):
+     * R1: "Bharatgas" sticker on driver cabin door (200x600mm) with Hindi "भारतगैस" and "बनाईये खाना. परोसिये प्यार.".
+     * R2: Side Main Panel MUST BE IN HINDI: "भारत पेट्रोलियम" (4200x900mm ACM sheet) in Devanagari script (text length 2450mm) with BPCL logo and wave ribbons (Option 2B). AN ENGLISH PANEL ON THE RIGHT SIDE IS A CRITICAL VIOLATION.
+     * R3: Emergency Information Panel (EIP, 800x600mm) with identical statutory hazmat text.
+     * R4: Right cage frame.
+     * R5_UNAUTHORIZED_MARKINGS: Check for ANY unauthorized text, religious symbols, private slogans or unapproved decals.
+   - Rear / Back View (STRICT FULL DETECTION & OCR):
+     * B1: 3rd Emergency Information Panel (EIP, 800x600mm) cladded onto rear mesh gate with exact statutory text.
+     * B2: Class 2 Flammable Gas diamond (250x250mm) and red/white reflective tape across rear under-run protection bumper.
+     * B3: Rear registration plate with functioning lamp.
+     * B4: Rear gate mesh and locking latch.
+     * B5_REAR_ALL_TEXT_AUDIT: Perform complete OCR and list EVERYTHING written, painted, or mounted on the rear view. Transcribe all words, numbers, and signs.
+     * B6_UNAUTHORIZED_MARKINGS: Actively check for any non-BPCL slogans (e.g. "Horn OK Please", "Buri Nazar...", "Keep Distance", "Use Dipper At Night"), religious symbols, private phone numbers, or unapproved decals on rear gate or bumper. If present, flag as non-compliant!
 
-Provide your evaluation STRICTLY as a valid JSON object with the following structure:
+2. DETECTION OF UNAUTHORIZED / EXTRA MARKINGS ACROSS ALL SIDES:
+   In F6, L5, R5, and B6, state clearly what extraneous text, slogans, or symbols (if any) were seen, or confirm surface is clean and compliant.
+
+Return your response strictly as valid JSON matching this schema:
 {{
   "overall_status": "PASS" | "FAIL",
-  "compliance_score": <int between 0 and 100>,
-  "summary": "<2-3 sentence executive audit summary>",
+  "compliance_score": <int 0-100>,
+  "summary": "<clear executive summary without any code formatting>",
   "critical_violations": ["<list of any critical violations preventing dispatch>"],
+  "rear_text_detected": ["<list of every text item, slogan, or sign detected on the rear view>"],
+  "unauthorized_markings_found": ["<list of any extraneous symbols, slogans, or unauthorized text found on any side>"],
   "quantities": {{
     "side_panels_detected": <int>,
     "eip_panels_detected": <int>,
@@ -197,19 +222,19 @@ Provide your evaluation STRICTLY as a valid JSON object with the following struc
   }},
   "front_checks": [
     {{
-      "id": "<matching checklist id, e.g. F1_GOODS_CARRIER>",
+      "id": "<rule id: F1_GOODS_CARRIER, F2_BP_FRONT_LOGO, F3_FRONT_CLASS_LABEL, F4_CABIN_LIVERY, F5_FRONT_NUMBER_PLATE, F6_UNAUTHORIZED_MARKINGS>",
       "name": "<rule name>",
       "status": "PASS" | "FAIL" | "WARNING",
       "confidence": <float 0.0 to 1.0>,
-      "observation": "<detailed observation of what is visible>",
-      "corrective_action": "<none or specific corrective measure required>"
+      "observation": "<detailed observation of what is visible on vehicle>",
+      "corrective_action": "<none or specific remediation required>"
     }}
   ],
   "left_checks": [...],
   "right_checks": [...],
   "back_checks": [...]
 }}
-Do NOT output any markdown ticks (```json) around the JSON, only return raw valid JSON.
+Do NOT output any markdown backticks (```json) around the JSON, return ONLY raw valid JSON.
 """
 
     contents = [
@@ -322,6 +347,14 @@ def generate_simulated_audit(scenario: str = "compliant") -> Dict[str, Any]:
                     "confidence": 0.99,
                     "observation": "Front registration number plate clearly legible and secure.",
                     "corrective_action": "None required"
+                },
+                {
+                    "id": "F6_UNAUTHORIZED_MARKINGS",
+                    "name": "Extraneous / Unauthorized Signs, Symbols & Markings (Front)",
+                    "status": "PASS",
+                    "confidence": 0.97,
+                    "observation": "Surface clean and compliant. No unauthorized stickers, religious symbols, or private slogans detected on windshield or cabin.",
+                    "corrective_action": "None required"
                 }
             ],
             "left_checks": [
@@ -355,6 +388,14 @@ def generate_simulated_audit(scenario: str = "compliant") -> Dict[str, Any]:
                     "status": "PASS",
                     "confidence": 0.93,
                     "observation": "Cage framing undamaged and securely clamped.",
+                    "corrective_action": "None required"
+                },
+                {
+                    "id": "L5_UNAUTHORIZED_MARKINGS",
+                    "name": "Extraneous / Unauthorized Signs, Symbols & Markings (Left Side)",
+                    "status": "PASS",
+                    "confidence": 0.96,
+                    "observation": "No unauthorized commercial paintings, private slogans, or extraneous stickers on left body.",
                     "corrective_action": "None required"
                 }
             ],
@@ -390,6 +431,14 @@ def generate_simulated_audit(scenario: str = "compliant") -> Dict[str, Any]:
                     "confidence": 0.94,
                     "observation": "Right cage structure intact.",
                     "corrective_action": "None required"
+                },
+                {
+                    "id": "R5_UNAUTHORIZED_MARKINGS",
+                    "name": "Extraneous / Unauthorized Signs, Symbols & Markings (Right Side)",
+                    "status": "PASS",
+                    "confidence": 0.96,
+                    "observation": "No unauthorized markings on right side or driver door.",
+                    "corrective_action": "None required"
                 }
             ],
             "back_checks": [
@@ -424,17 +473,42 @@ def generate_simulated_audit(scenario: str = "compliant") -> Dict[str, Any]:
                     "confidence": 0.94,
                     "observation": "Mesh gate securely locked and latch functional.",
                     "corrective_action": "None required"
+                },
+                {
+                    "id": "B5_REAR_ALL_TEXT_AUDIT",
+                    "name": "Rear View Full Text & Signage Detection",
+                    "status": "PASS",
+                    "confidence": 0.98,
+                    "observation": "Detected statutory text: 'CORRECT TECHNICAL NAME: LIQUIFIED PETROLEUM GAS', 'UN No. 1075', 'HAZCHEM 2WE', emergency dial 100/101/102, 'SPECIALIST ADVICE: USE DRY CHEMICAL POWDER TYPE FIRE EXTINGUISHER', and registration plate. All text strictly adheres to BPCL document.",
+                    "corrective_action": "None required"
+                },
+                {
+                    "id": "B6_UNAUTHORIZED_MARKINGS",
+                    "name": "Extraneous / Unauthorized Signs, Symbols & Markings (Rear Gate)",
+                    "status": "PASS",
+                    "confidence": 0.98,
+                    "observation": "No unauthorized slogans ('Horn OK Please' etc.), private phone numbers, or religious decals detected on rear gate or bumper.",
+                    "corrective_action": "None required"
                 }
-            ]
+            ],
+            "rear_text_detected": [
+                "EIP Board: LIQUIFIED PETROLEUM GAS",
+                "EIP Board: UN No. 1075 | HAZCHEM 2WE",
+                "EIP Board: IN EMERGENCY DIAL: POLICE 100, FIRE 101, AMBULANCE 102",
+                "EIP Board: SPECIALIST ADVICE: USE DRY CHEMICAL POWDER TYPE FIRE EXTINGUISHER",
+                "Number Plate: MH 12 BP 1075"
+            ],
+            "unauthorized_markings_found": []
         }
     else:  # non-compliant / violations
         res = {
             "overall_status": "FAIL",
-            "compliance_score": 58,
-            "summary": "Vehicle FAILED compliance audit. Critical deficiencies detected: Right side panel is missing Hindi text (duplicate English panel mounted), Rear Emergency Information Panel (EIP) is missing from the rear gate, and front Class 2 diamond sticker is peeling.",
+            "compliance_score": 52,
+            "summary": "Vehicle FAILED compliance audit. Critical deficiencies: Rear Emergency Information Panel (EIP) is MISSING, Right side panel is in English instead of mandatory Hindi, unauthorized painted slogan 'Horn OK Please' and private contact numbers detected on rear, and front Class 2 diamond is damaged.",
             "critical_violations": [
                 "Right Side Panel: Hindi text ('भारत पेट्रोलियम') is missing. Incorrect panel language used.",
                 "Rear EIP Board Missing: Vehicle only has 2 of 3 required Emergency Information Panels.",
+                "Rear Unauthorized Markings: 'Horn OK Please' painted slogan and private contact numbers detected on rear gate and bumper.",
                 "Front Hazard Label: Peeling/damaged Class 2 Flammable Gas diamond."
             ],
             "quantities": {
@@ -482,6 +556,14 @@ def generate_simulated_audit(scenario: str = "compliant") -> Dict[str, Any]:
                     "confidence": 0.96,
                     "observation": "Front plate legible.",
                     "corrective_action": "None"
+                },
+                {
+                    "id": "F6_UNAUTHORIZED_MARKINGS",
+                    "name": "Extraneous / Unauthorized Signs, Symbols & Markings (Front)",
+                    "status": "WARNING",
+                    "confidence": 0.89,
+                    "observation": "Detected unauthorized religious sticker on top-right corner of front windshield.",
+                    "corrective_action": "Remove unauthorized sticker from windshield."
                 }
             ],
             "left_checks": [
@@ -516,6 +598,14 @@ def generate_simulated_audit(scenario: str = "compliant") -> Dict[str, Any]:
                     "confidence": 0.91,
                     "observation": "Cage bars secure.",
                     "corrective_action": "None"
+                },
+                {
+                    "id": "L5_UNAUTHORIZED_MARKINGS",
+                    "name": "Extraneous / Unauthorized Signs, Symbols & Markings (Left Side)",
+                    "status": "PASS",
+                    "confidence": 0.94,
+                    "observation": "No extraneous markings on left side body.",
+                    "corrective_action": "None"
                 }
             ],
             "right_checks": [
@@ -532,7 +622,7 @@ def generate_simulated_audit(scenario: str = "compliant") -> Dict[str, Any]:
                     "name": "Side Main Panel in Hindi ('भारत पेट्रोलियम')",
                     "status": "FAIL",
                     "confidence": 0.98,
-                    "observation": "VIOLATION: Right side panel has English text instead of mandatory Hindi ('भारत पेट्रोलियम') text.",
+                    "observation": "CRITICAL VIOLATION: Right side panel has English text instead of mandatory Hindi ('भारत पेट्रोलियम') text.",
                     "corrective_action": "Replace right panel with Hindi vinyl cladded ACM sheet per specification."
                 },
                 {
@@ -549,6 +639,14 @@ def generate_simulated_audit(scenario: str = "compliant") -> Dict[str, Any]:
                     "status": "PASS",
                     "confidence": 0.92,
                     "observation": "Structure acceptable.",
+                    "corrective_action": "None"
+                },
+                {
+                    "id": "R5_UNAUTHORIZED_MARKINGS",
+                    "name": "Extraneous / Unauthorized Signs, Symbols & Markings (Right Side)",
+                    "status": "PASS",
+                    "confidence": 0.93,
+                    "observation": "No unauthorized text on right side.",
                     "corrective_action": "None"
                 }
             ],
@@ -584,7 +682,34 @@ def generate_simulated_audit(scenario: str = "compliant") -> Dict[str, Any]:
                     "confidence": 0.93,
                     "observation": "Mesh latch secured.",
                     "corrective_action": "None"
+                },
+                {
+                    "id": "B5_REAR_ALL_TEXT_AUDIT",
+                    "name": "Rear View Full Text & Signage Detection",
+                    "status": "FAIL",
+                    "confidence": 0.97,
+                    "observation": "Detected text: 'MH 12 BP 1075' on number plate, hand-painted slogan 'Horn OK Please' on bumper, and private mobile number '98XXXXXXXX' on rear gate frame. MANDATORY STATUTORY EIP BOARD TEXT IS MISSING.",
+                    "corrective_action": "Install statutory EIP board with mandatory hazmat text and remove non-statutory words."
+                },
+                {
+                    "id": "B6_UNAUTHORIZED_MARKINGS",
+                    "name": "Extraneous / Unauthorized Signs, Symbols & Markings (Rear Gate)",
+                    "status": "FAIL",
+                    "confidence": 0.98,
+                    "observation": "DEFECT: Detected unauthorized painted slogan 'Horn OK Please' across rear bumper and handwritten private phone number on rear mesh gate frame.",
+                    "corrective_action": "Scrub and repaint bumper to remove 'Horn OK Please' slogan and remove private contact number."
                 }
+            ],
+            "rear_text_detected": [
+                "Registration Plate: MH 12 BP 1075",
+                "Painted Slogan on Bumper: 'Horn OK Please' (UNAUTHORIZED)",
+                "Handwritten Gate Marking: 'Transporter Contact: 98XXXXXXXX' (UNAUTHORIZED)",
+                "NOTE: Statutory EIP Hazmat Board text is completely MISSING"
+            ],
+            "unauthorized_markings_found": [
+                "Rear Bumper: Unauthorized painted slogan 'Horn OK Please'",
+                "Rear Gate: Private contact number painting",
+                "Front Windshield: Non-statutory religious decal"
             ]
         }
     return _enrich_checks_with_specs(res)

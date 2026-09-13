@@ -651,6 +651,121 @@ RULE_TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             "hi": "जाली की वेल्डिंग कराएं और मजबूत कुंडी/ताला लगाएं।",
             "bn": "জাল ওয়েল্ডিং করুন এবং মজবুত ছিটকিনি/তালা লাগান।"
         }
+    },
+    "F6_UNAUTHORIZED_MARKINGS": {
+        "side": "front",
+        "names": {
+            "en": "Extraneous / Unauthorized Signs & Symbols (Front)",
+            "hi": "अतिरिक्त / गैर-मानक चिन्ह व लिखावट (सामने)",
+            "bn": "অতিরিক্ত / অননুমোদিত চিহ্ন ও লেখা (সামনে)"
+        },
+        "correct_spec": {
+            "en": "Strictly NO unauthorized text, religious symbols, private slogans, mobile numbers, or unapproved decals permitted on windshield or front cabin. Only official BPCL branding allowed.",
+            "hi": "विंडशील्ड या सामने के केबिन पर कोई भी अनाधिकृत लिखावट, धार्मिक प्रतीक, नारे, फोन नंबर या गैर-मानक स्टीकर नहीं होने चाहिए। केवल बीपीसीएल के तय स्टीकर ही मान्य हैं।",
+            "bn": "উইন্ডশিল্ড বা সামনের কেবিনে কোনো অননুমোদিত লেখা, ধর্মীয় প্রতীক, স্লোগান, মোবাইল নম্বর বা অনুমোদনহীন স্টিকার থাকা নিষিদ্ধ। কেবল বিপিসিএল অনুমোদিত স্টিকারই গ্রহণযোগ্য।"
+        },
+        "default_defect": {
+            "en": "Detected unauthorized stickers, slogans, or religious symbols on front cabin/windshield.",
+            "hi": "सामने केबिन या विंडशील्ड पर गैर-मानक स्टीकर, धार्मिक चिन्ह या नारे पाए गए।",
+            "bn": "সামনের কেবিন বা উইন্ডশিল্ডে অননুমোদিত স্টিকার, ধর্মীয় চিহ্ন বা স্লোগান পাওয়া গেছে।"
+        },
+        "default_action": {
+            "en": "Scrape and remove all unauthorized stickers and non-statutory text from front.",
+            "hi": "सामने से सभी गैर-मानक स्टीकर और अतिरिक्त लिखावट तुरंत हटाएं।",
+            "bn": "সামন থেকে সমস্ত অননুমোদিত স্টিকার এবং অতিরিক্ত লেখা অবিলম্বে মুছে ফেলুন।"
+        }
+    },
+    "L5_UNAUTHORIZED_MARKINGS": {
+        "side": "left",
+        "names": {
+            "en": "Extraneous / Unauthorized Signs & Markings (Left)",
+            "hi": "अतिरिक्त / गैर-मानक चिन्ह व लिखावट (बायां)",
+            "bn": "অতিরিক্ত / অননুমোদিত চিহ্ন ও লেখা (বাম)"
+        },
+        "correct_spec": {
+            "en": "Strictly NO unauthorized paintings, private slogans, commercial ads, or unapproved decals on left side body or cabin door. Only BPCL English livery permitted.",
+            "hi": "बाईं तरफ की बॉडी या केबिन दरवाजे पर कोई अनाधिकृत पेंटिंग, गैर-मानक नारे या स्टीकर नहीं होने चाहिए। केवल आधिकारिक बीपीसीएल अंग्रेजी बोर्ड मान्य है।",
+            "bn": "বাম পাশের বডি বা কেবিনের দরজায় কোনো অননুমোদিত পেইন্টিং, স্লোগান বা স্টিকার থাকা নিষিদ্ধ। কেবল বিপিসিএল ইংরেজি বোর্ডই অনুমোদিত।"
+        },
+        "default_defect": {
+            "en": "Unauthorized commercial markings or extra slogans detected on left side.",
+            "hi": "बाईं तरफ गैर-मानक नारे या अनाधिकृत चिन्ह/विज्ञापन पाए गए।",
+            "bn": "বাম পাশে অননুমোদিত স্লোগান বা বিজ্ঞাপন পাওয়া গেছে।"
+        },
+        "default_action": {
+            "en": "Remove non-standard decals and clean left surface to conform with BPCL livery.",
+            "hi": "बाईं तरफ से गैर-मानक स्टीकर और अतिरिक्त लिखावट हटाएं।",
+            "bn": "বাম পাশ থেকে অননুমোদিত স্টিকার ও অতিরিক্ত লেখা মুছে ফেলুন।"
+        }
+    },
+    "R5_UNAUTHORIZED_MARKINGS": {
+        "side": "right",
+        "names": {
+            "en": "Extraneous / Unauthorized Signs & Markings (Right)",
+            "hi": "अतिरिक्त / गैर-मानक चिन्ह व लिखावट (दायां)",
+            "bn": "অতিরিক্ত / অননুমোদিত चिन्ह व लिखावट (दायां)"
+        },
+        "correct_spec": {
+            "en": "Strictly NO unauthorized paintings, private slogans, religious symbols, or extraneous decals on right side body or driver door. Only BPCL Hindi livery permitted.",
+            "hi": "दाईं तरफ की बॉडी या ड्राइवर दरवाजे पर कोई अनाधिकृत लिखावट, नारे, धार्मिक प्रतीक या विज्ञापन नहीं होने चाहिए। केवल आधिकारिक बीपीसीएल हिन्दी बोर्ड मान्य है।",
+            "bn": "ডান পাশের বডি বা ড্রাইভারের দরজায় কোনো অননুমোদিত লেখা, স্লোগান, ধর্মীয় প্রতীক বা বিজ্ঞাপন থাকা নিষিদ্ধ। কেবল বিপিসিএল হিন্দি বোর্ডই অনুমোদিত।"
+        },
+        "default_defect": {
+            "en": "Unauthorized markings or extra slogans detected on right side.",
+            "hi": "दाईं तरफ गैर-मानक नारे या अनाधिकृत चिन्ह पाए गए।",
+            "bn": "ডান পাশে অননুমোদিত স্লোগান বা চিহ্ন পাওয়া গেছে।"
+        },
+        "default_action": {
+            "en": "Remove unauthorized decals and clean right side body.",
+            "hi": "दाईं तरफ से गैर-मानक स्टीकर और अतिरिक्त लिखावट हटाएं।",
+            "bn": "ডান পাশ থেকে অননুমোদিত স্টিকার ও অতিরিক্ত লেখা মুছে ফেলুন।"
+        }
+    },
+    "B5_REAR_ALL_TEXT_AUDIT": {
+        "side": "back",
+        "names": {
+            "en": "Rear View Full Written Text & Signage Audit",
+            "hi": "पीछे लिखी संपूर्ण लिखावट एवं चिन्हों की जांच",
+            "bn": "পেছনের সম্পূর্ণ লেখা ও চিহ্নের যাচাইকরণ"
+        },
+        "correct_spec": {
+            "en": "Rear view must strictly display ONLY: 1) EIP Board with statutory text ('LIQUIFIED PETROLEUM GAS', UN 1075, HAZCHEM 2WE, Police 100/Fire 101/Amb 102, Dry Chemical Powder, Class 2 label), 2) Class 2 Diamond (250x250mm) + reflective tape, 3) Registration Plate. No other text permitted.",
+            "hi": "पीछे केवल ये 3 चीजें लिखी होनी चाहिए: 1) EIP बोर्ड (UN 1075, 2WE, आपातकालीन नंबर 100/101/102, ड्राई केमिकल पाउडर), 2) क्लास 2 डायमंड व रिफ्लेक्टिव टेप, 3) नंबर प्लेट। इनके अलावा कोई अन्य लिखावट मान्य नहीं है।",
+            "bn": "পেছনে কেবল এই ৩টি জিনিস লেখা থাকতে হবে: ১) EIP বোর্ড (UN 1075, 2WE, জরুরী নম্বর 100/101/102, ড্রাই কেমিক্যাল পাউডার), ২) ক্লাস ২ ডায়মন্ড ও প্রতিফলক টেপ, ৩) নম্বর প্লেট। এর বাইরে কোনো লেখা গ্রহণযোগ্য নয়।"
+        },
+        "default_defect": {
+            "en": "Rear view contains non-standard text, missing statutory lines on EIP, or extra unapproved writing.",
+            "hi": "पीछे के गेट पर गैर-मानक लिखावट पाई गई या EIP बोर्ड पर वैधानिक विवरण अधूरा है।",
+            "bn": "পেছনে অনুমোদনহীন লেখা পাওয়া গেছে অথবা EIP বোর্ডের তথ্য অসম্পূর্ণ রয়েছে।"
+        },
+        "default_action": {
+            "en": "Verify and ensure 100% exact statutory EIP text and remove any extraneous writing.",
+            "hi": "पीछे केवल मानक EIP विवरण रखें और सभी अतिरिक्त शब्द या नारे हटाएं।",
+            "bn": "পেছনে কেবল সঠিক EIP তথ্য রাখুন এবং অতিরিক্ত সমস্ত লেখা মুছে দিন।"
+        }
+    },
+    "B6_UNAUTHORIZED_MARKINGS": {
+        "side": "back",
+        "names": {
+            "en": "Extraneous / Unauthorized Signs & Symbols (Rear Gate)",
+            "hi": "पीछे अनाधिकृत नारे, चिन्ह व स्लोगन ('Horn OK Please' आदि)",
+            "bn": "পেছনে অননুমোদিত স্লোগান, প্রতীক ও সাইন ('Horn OK Please' ইত্যাদি)"
+        },
+        "correct_spec": {
+            "en": "Strictly NO unauthorized slogans (e.g. 'Horn OK Please', 'Buri Nazar Wale...', 'Use Dipper At Night', 'Speed 40'), religious symbols, decorative art, or private phone numbers on rear gate or bumper.",
+            "hi": "पीछे के जालीदार गेट या बम्पर पर कोई भी अनधिकृत स्लोगन (जैसे 'Horn OK Please', 'बुरी नजर वाले...', 'रात में डिपर दें'), धार्मिक प्रतीक, शायरी या निजी फोन नंबर पूर्णतः वर्जित हैं।",
+            "bn": "পেছনের জালের গেট বা বাম্পারে কোনো অননুমোদিত স্লোগান (যেমন 'Horn OK Please', 'Buri Nazar...', ইত্যাদি), ধর্মীয় প্রতীক, ছবি বা ব্যক্তিগত ফোন নম্বর লেখা সম্পূর্ণ নিষিদ্ধ।"
+        },
+        "default_defect": {
+            "en": "Detected unauthorized slogans ('Horn OK Please' / private slogans) or non-standard symbols on rear gate/bumper.",
+            "hi": "पीछे के गेट या बम्पर पर 'Horn OK Please' / गैर-मानक स्लोगन या अनाधिकृत चिन्ह पाए गए।",
+            "bn": "পেছনের গেট বা বাম্পারে 'Horn OK Please' বা অননুমোদিত স্লোগান ও চিহ্ন পাওয়া গেছে।"
+        },
+        "default_action": {
+            "en": "Repaint or scrub rear bumper/gate to remove all unauthorized slogans and symbols.",
+            "hi": "बम्पर और गेट से सभी गैर-मानक नारे व चिन्ह मिटाएं।",
+            "bn": "বাম্পার ও গেট থেকে সমস্ত অননুমোদিত স্লোগান ও চিহ্ন মুছে ফেলুন।"
+        }
     }
 }
 

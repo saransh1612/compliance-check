@@ -400,11 +400,20 @@ if run_check:
                 st.error(f"Audit failed: {str(e)}")
 
 
+def render_html_clean(html_content: str):
+    """Renders HTML directly without markdown code-block artifacts."""
+    if hasattr(st, "html"):
+        st.html(html_content)
+    else:
+        unindented = "\n".join(line.lstrip() for line in html_content.splitlines())
+        st.markdown(unindented, unsafe_allow_html=True)
+
+
 def render_checklist_html_table(items: list, current_lang: str, show_side: bool = True) -> str:
     """
     Renders the direct visual checklist table with:
     - Truck Side badge with icon
-    - Inspection Item with rule ID
+    - Inspection Item (clean typography, no code blocks)
     - Clear green tick mark ✅ (PASS) or red cross ❌ (FAIL)
     - Column: ✅ What is Correct (Required Standard)
     - Column: ❌ What is Wrong (Observed Defect & Remediation)
@@ -421,91 +430,170 @@ def render_checklist_html_table(items: list, current_lang: str, show_side: bool 
 
     side_th = f'<th style="width:13%; padding:14px; text-align:left; border-right:1px solid #1e3a8a;">{col_side}</th>' if show_side else ''
 
-    table_html = f"""
-    <table style="width:100%; border-collapse:collapse; margin-top:12px; margin-bottom:20px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:#ffffff; border:1px solid #cbd5e1; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-        <thead>
-            <tr style="background:#003399; color:#ffffff; font-size:13px; text-transform:uppercase; letter-spacing:0.5px;">
-                {side_th}
-                <th style="width:{'21%' if show_side else '25%'}; padding:14px; text-align:left; border-right:1px solid #1e3a8a;">{col_item}</th>
-                <th style="width:{'13%' if show_side else '14%'}; padding:14px; text-align:center; border-right:1px solid #1e3a8a;">{col_status}</th>
-                <th style="width:{'26%' if show_side else '30%'}; padding:14px; text-align:left; background:#002673; border-right:1px solid #1e3a8a;">{col_correct}</th>
-                <th style="width:{'27%' if show_side else '31%'}; padding:14px; text-align:left; background:#001a4e;">{col_wrong}</th>
-            </tr>
-        </thead>
-        <tbody>
-    """
+    lines = [
+        '<div style="overflow-x:auto; width:100%; margin-top:12px; margin-bottom:20px;">',
+        '<table style="width:100%; border-collapse:collapse; font-family:-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif; background:#ffffff; border:1px solid #cbd5e1; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06);">',
+        '<thead>',
+        '<tr style="background:#003399; color:#ffffff; font-size:13px; text-transform:uppercase; letter-spacing:0.5px;">',
+        side_th,
+        f'<th style="width:{"21%" if show_side else "25%"}; padding:14px; text-align:left; border-right:1px solid #1e3a8a;">{col_item}</th>',
+        f'<th style="width:{"13%" if show_side else "14%"}; padding:14px; text-align:center; border-right:1px solid #1e3a8a;">{col_status}</th>',
+        f'<th style="width:{"26%" if show_side else "30%"}; padding:14px; text-align:left; background:#002673; border-right:1px solid #1e3a8a;">{col_correct}</th>',
+        f'<th style="width:{"27%" if show_side else "31%"}; padding:14px; text-align:left; background:#001a4e;">{col_wrong}</th>',
+        '</tr>',
+        '</thead>',
+        '<tbody>'
+    ]
 
     for item in items:
         loc = localize_item(item, lang=current_lang)
         status = loc["status"]
-        
         row_bg = "#fff9f9" if status == "FAIL" else ("#fffdf7" if status == "WARNING" else "#ffffff")
 
         side_td = ""
         if show_side:
-            side_td = f"""
-            <td style="padding:14px; vertical-align:top; border-right:1px solid #f1f5f9; border-bottom:1px solid #e2e8f0;">
-                <span style="background:{loc['side_badge_bg']}; color:{loc['side_badge_fg']}; padding:5px 10px; border-radius:6px; font-weight:700; font-size:12px; display:inline-block; white-space:nowrap;">
-                    {loc['side_icon']} {loc['side_short']}
-                </span>
-            </td>
-            """
+            side_td = f'<td style="padding:14px; vertical-align:top; border-right:1px solid #f1f5f9; border-bottom:1px solid #e2e8f0;"><span style="background:{loc["side_badge_bg"]}; color:{loc["side_badge_fg"]}; padding:5px 10px; border-radius:6px; font-weight:700; font-size:12px; display:inline-block; white-space:nowrap;">{loc["side_icon"]} {loc["side_short"]}</span></td>'
 
         if status == "PASS":
-            wrong_content = f"""
-            <div style="color:#166534; font-size:13px; font-weight:600; line-height:1.45;">
-                {loc['what_is_wrong']}
-            </div>
-            """
+            wrong_content = f'<div style="color:#166534; font-size:13px; font-weight:600; line-height:1.45;">{loc["what_is_wrong"]}</div>'
             wrong_bg = "#f0fdf4"
             wrong_border = "#bbf7d0"
         elif status == "WARNING":
-            wrong_content = f"""
-            <div style="color:#92400e; font-size:13px; font-weight:700; line-height:1.45;">
-                ⚠️ {loc['what_is_wrong']}
-            </div>
-            <div style="margin-top:6px; font-size:12px; color:#1e40af; background:#e0f2fe; padding:5px 8px; border-radius:4px; border-left:3px solid #0284c7;">
-                <strong>🔧 {get_ui_text('remediation_label', current_lang)}</strong> {loc['action']}
-            </div>
-            """
+            wrong_content = f'<div style="color:#92400e; font-size:13px; font-weight:700; line-height:1.45;">⚠️ {loc["what_is_wrong"]}</div><div style="margin-top:6px; font-size:12px; color:#1e40af; background:#e0f2fe; padding:5px 8px; border-radius:4px; border-left:3px solid #0284c7;"><strong>🔧 {get_ui_text("remediation_label", current_lang)}</strong> {loc["action"]}</div>'
             wrong_bg = "#fffbeb"
             wrong_border = "#fde68a"
         else:
-            wrong_content = f"""
-            <div style="color:#991b1b; font-size:13px; font-weight:700; line-height:1.45;">
-                ❌ {loc['what_is_wrong']}
-            </div>
-            <div style="margin-top:6px; font-size:12px; color:#b91c1c; background:#fee2e2; padding:6px 10px; border-radius:4px; border-left:3px solid #ef4444;">
-                <strong>🔧 {get_ui_text('remediation_label', current_lang)}</strong> {loc['action']}
-            </div>
-            """
+            wrong_content = f'<div style="color:#991b1b; font-size:13px; font-weight:700; line-height:1.45;">❌ {loc["what_is_wrong"]}</div><div style="margin-top:6px; font-size:12px; color:#b91c1c; background:#fee2e2; padding:6px 10px; border-radius:4px; border-left:3px solid #ef4444;"><strong>🔧 {get_ui_text("remediation_label", current_lang)}</strong> {loc["action"]}</div>'
             wrong_bg = "#fef2f2"
             wrong_border = "#fecaca"
 
-        table_html += f"""
-        <tr style="background:{row_bg}; border-bottom:1px solid #e2e8f0;">
-            {side_td}
-            <td style="padding:14px; vertical-align:top; border-right:1px solid #f1f5f9; border-bottom:1px solid #e2e8f0;">
-                <div style="font-weight:700; color:#0f172a; font-size:14px; line-height:1.35;">{loc['name']}</div>
-                <div style="font-size:11px; color:#64748b; margin-top:4px;">Rule ID: <code>{loc['id']}</code></div>
-            </td>
-            <td style="padding:14px; vertical-align:top; text-align:center; border-right:1px solid #f1f5f9; border-bottom:1px solid #e2e8f0;">
-                {loc['status_badge_html']}
-            </td>
-            <td style="padding:14px; vertical-align:top; background:#f0fdf4; border-right:1px solid #bbf7d0; border-left:3px solid #10b981; border-bottom:1px solid #e2e8f0; font-size:13px; color:#14532d; line-height:1.45;">
-                {loc['what_is_correct']}
-            </td>
-            <td style="padding:14px; vertical-align:top; background:{wrong_bg}; border-left:3px solid {wrong_border}; border-bottom:1px solid #e2e8f0;">
-                {wrong_content}
-            </td>
-        </tr>
-        """
+        lines.extend([
+            f'<tr style="background:{row_bg}; border-bottom:1px solid #e2e8f0;">',
+            side_td,
+            f'<td style="padding:14px; vertical-align:top; border-right:1px solid #f1f5f9; border-bottom:1px solid #e2e8f0;"><div style="font-weight:700; color:#0f172a; font-size:14px; line-height:1.35;">{loc["name"]}</div></td>',
+            f'<td style="padding:14px; vertical-align:top; text-align:center; border-right:1px solid #f1f5f9; border-bottom:1px solid #e2e8f0;">{loc["status_badge_html"]}</td>',
+            f'<td style="padding:14px; vertical-align:top; background:#f0fdf4; border-right:1px solid #bbf7d0; border-left:3px solid #10b981; border-bottom:1px solid #e2e8f0; font-size:13px; color:#14532d; line-height:1.45;">{loc["what_is_correct"]}</td>',
+            f'<td style="padding:14px; vertical-align:top; background:{wrong_bg}; border-left:3px solid {wrong_border}; border-bottom:1px solid #e2e8f0;">{wrong_content}</td>',
+            '</tr>'
+        ])
 
-    table_html += """
-        </tbody>
-    </table>
-    """
-    return table_html
+    lines.extend([
+        '</tbody>',
+        '</table>',
+        '</div>'
+    ])
+    return "\n".join(lines)
+
+
+def render_rear_text_table(rear_texts: list, lang: str) -> str:
+    """Renders a dedicated table displaying all text detected on the rear view."""
+    if not rear_texts:
+        return ""
+    
+    title = "🔍 पीछे लिखी सभी लिखावट एवं चिन्हों की सूची (Rear View Written Text Readout)" if lang == "hi" else (
+        "🔍 পেছনের সম্পূর্ণ লেখা ও চিহ্নের তালিকা (Rear View Text Readout)" if lang == "bn" else
+        "🔍 Rear View Full Text & Signage Detection Inventory"
+    )
+
+    lines = [
+        '<div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:16px; margin-top:20px; margin-bottom:20px;">',
+        f'<h4 style="margin-top:0; margin-bottom:12px; color:#003399; font-size:15px; font-weight:800;">{title}</h4>',
+        '<div style="overflow-x:auto;">',
+        '<table style="width:100%; border-collapse:collapse; background:#ffffff; border:1px solid #e2e8f0; font-size:13px;">',
+        '<thead>',
+        '<tr style="background:#0284c7; color:#ffffff; font-size:12px; text-transform:uppercase;">',
+        '<th style="padding:10px; width:8%; text-align:center;">#</th>',
+        '<th style="padding:10px; width:52%; text-align:left;">' + ("पहचानी गई लिखावट / चिन्ह (Detected Text)" if lang == "hi" else ("সনাক্তকৃত লেখা বা প্রতীক" if lang == "bn" else "Detected Text / Sign")) + '</th>',
+        '<th style="padding:10px; width:40%; text-align:left;">' + ("बीपीसीएल मानक स्थिति (Compliance Classification)" if lang == "hi" else ("বিপিসিএল মান্যতা শ্রেণীবিভাগ" if lang == "bn" else "Compliance Classification")) + '</th>',
+        '</tr>',
+        '</thead>',
+        '<tbody>'
+    ]
+
+    for idx, txt in enumerate(rear_texts, 1):
+        is_statutory = any(k in txt.upper() for k in ["EIP", "UN", "1075", "HAZCHEM", "2WE", "POLICE", "100", "FIRE", "101", "AMBULANCE", "102", "DRY CHEMICAL", "PLATE"])
+        is_unauth = any(k in txt.upper() for k in ["HORN", "PLEASE", "BURI NAZAR", "DIPPER", "UNAUTHORIZED", "CONTACT", "MOBILE", "PHONE"])
+
+        if is_unauth:
+            badge = '<span style="background:#fee2e2; color:#991b1b; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">❌ गैर-मानक / अनधिकृत (Non-BPCL)</span>' if lang == "hi" else (
+                '<span style="background:#fee2e2; color:#991b1b; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">❌ অননুমোদিত লেখা (Non-BPCL)</span>' if lang == "bn" else
+                '<span style="background:#fee2e2; color:#991b1b; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">❌ Unauthorized / Non-BPCL</span>'
+            )
+            row_bg = "#fff5f5"
+        elif is_statutory:
+            badge = '<span style="background:#dcfce7; color:#166534; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">✅ वैधानिक मानक (Statutory BPCL)</span>' if lang == "hi" else (
+                '<span style="background:#dcfce7; color:#166534; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">✅ সংবিধিবদ্ধ তথ্য (Statutory BPCL)</span>' if lang == "bn" else
+                '<span style="background:#dcfce7; color:#166534; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">✅ Mandatory Statutory BPCL</span>'
+            )
+            row_bg = "#ffffff"
+        else:
+            badge = '<span style="background:#f1f5f9; color:#475569; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">ℹ️ अन्य लिखावट (Other Text)</span>'
+            row_bg = "#ffffff"
+
+        lines.extend([
+            f'<tr style="background:{row_bg}; border-bottom:1px solid #e2e8f0;">',
+            f'<td style="padding:10px; text-align:center; font-weight:bold; color:#64748b;">{idx}</td>',
+            f'<td style="padding:10px; font-weight:600; color:#0f172a;">{txt}</td>',
+            f'<td style="padding:10px;">{badge}</td>',
+            '</tr>'
+        ])
+
+    lines.extend([
+        '</tbody>',
+        '</table>',
+        '</div>',
+        '</div>'
+    ])
+    return "\n".join(lines)
+
+
+def render_unauthorized_markings_table(markings: list, lang: str) -> str:
+    """Renders a dedicated warning table for unauthorized/extraneous symbols, signs, or slogans."""
+    if not markings:
+        return ""
+    
+    title = "⚠️ गाड़ी पर पाए गए गैर-मानक चिन्ह, नारे व स्टीकर (Unauthorized Markings Detected)" if lang == "hi" else (
+        "⚠️ গাড়িতে সনাক্ত অননুমোদিত চিহ্ন, স্লোগান ও স্টিকার (Unauthorized Markings Detected)" if lang == "bn" else
+        "⚠️ Extraneous / Unauthorized Markings & Slogans Detected on Vehicle"
+    )
+
+    lines = [
+        '<div style="background:#fef2f2; border:2px solid #ef4444; border-radius:10px; padding:16px; margin-top:20px; margin-bottom:20px;">',
+        f'<h4 style="margin-top:0; margin-bottom:12px; color:#991b1b; font-size:15px; font-weight:800;">{title}</h4>',
+        '<div style="overflow-x:auto;">',
+        '<table style="width:100%; border-collapse:collapse; background:#ffffff; border:1px solid #fecaca; font-size:13px;">',
+        '<thead>',
+        '<tr style="background:#dc2626; color:#ffffff; font-size:12px; text-transform:uppercase;">',
+        '<th style="padding:10px; width:8%; text-align:center;">#</th>',
+        '<th style="padding:10px; width:46%; text-align:left;">' + ("पहचाना गया गैर-मानक चिन्ह / लिखावट" if lang == "hi" else ("সনাক্তকৃত অননুমোদিত চিহ্ন বা লেখা" if lang == "bn" else "Detected Non-Compliant Marking")) + '</th>',
+        '<th style="padding:10px; width:46%; text-align:left;">' + ("बीपीसीएल नियम एवं आवश्यक सुधार" if lang == "hi" else ("বিপিসিএল নিয়ম ও প্রতিকার" if lang == "bn" else "BPCL Rule & Remediation Action")) + '</th>',
+        '</tr>',
+        '</thead>',
+        '<tbody>'
+    ]
+
+    for idx, mark in enumerate(markings, 1):
+        rule_desc = (
+            "बीपीसीएल नियमों अनुसार किसी भी प्रकार के धार्मिक चिन्ह, निजी नारे ('Horn OK Please' आदि), या फोन नंबर वर्जित हैं। इन्हें तुरंत खुरचकर या पेंट कर हटाएं।" if lang == "hi" else (
+                "বিপিসিএল নিয়ম অনুযায়ী কোনো ধর্মীয় প্রতীক, ব্যক্তিগত স্লোগান ('Horn OK Please' ইত্যাদি) বা ফোন নম্বর লেখা সম্পূর্ণ নিষিদ্ধ। অবিলম্বে মুছে ফেলুন।" if lang == "bn" else
+                "BPCL fleet standards strictly prohibit unauthorized slogans ('Horn OK Please' etc.), religious symbols, or private adverts. Scrub or repaint surface immediately."
+            )
+        )
+        lines.extend([
+            '<tr style="border-bottom:1px solid #fecaca; background:#fff9f9;">',
+            f'<td style="padding:10px; text-align:center; font-weight:bold; color:#dc2626;">{idx}</td>',
+            f'<td style="padding:10px; font-weight:700; color:#991b1b;">❌ {mark}</td>',
+            f'<td style="padding:10px; color:#475569; line-height:1.4;">{rule_desc}</td>',
+            '</tr>'
+        ])
+
+    lines.extend([
+        '</tbody>',
+        '</table>',
+        '</div>',
+        '</div>'
+    ])
+    return "\n".join(lines)
 
 
 # Display Results Section
@@ -515,27 +603,29 @@ if st.session_state.audit_results:
     score = data.get("compliance_score", 0)
     violations = data.get("critical_violations", [])
     quantities = data.get("quantities", {})
+    rear_texts = data.get("rear_text_detected", [])
+    unauth_marks = data.get("unauthorized_markings_found", [])
 
     st.markdown("---")
     st.markdown(f"## 📊 {get_ui_text('audit_results_title', lang)}")
 
     # Overall Status Banner
     if is_pass:
-        st.markdown(f"""
+        render_html_clean(f"""
         <div style="background:#dcfce7; border:2px solid #16a34a; border-radius:10px; padding:18px 24px; text-align:center; color:#14532d; margin-bottom:16px;">
             <div style="font-size:22px; font-weight:800; letter-spacing:0.3px;">✅ {get_ui_text('status_pass', lang)}</div>
             <div style="font-size:14px; margin-top:4px; color:#166534;">{get_ui_text('status_pass_desc', lang)} | {get_ui_text('score_label', lang)}: <strong>{score}%</strong></div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
     else:
-        st.markdown(f"""
+        render_html_clean(f"""
         <div style="background:#fee2e2; border:2px solid #dc2626; border-radius:10px; padding:18px 24px; text-align:center; color:#7f1d1d; margin-bottom:16px;">
             <div style="font-size:22px; font-weight:800; letter-spacing:0.3px;">❌ {get_ui_text('status_fail', lang)}</div>
             <div style="font-size:14px; margin-top:4px; color:#991b1b;">{get_ui_text('status_fail_desc', lang)} | {get_ui_text('score_label', lang)}: <strong>{score}%</strong></div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
-    # All 17 items consolidated
+    # All items consolidated
     all_checks = []
     for sec in ["front_checks", "left_checks", "right_checks", "back_checks"]:
         all_checks.extend(data.get(sec, []))
@@ -547,41 +637,41 @@ if st.session_state.audit_results:
     # Key Metrics Row
     m1, m2, m3, m4, m5 = st.columns(5)
     with m1:
-        st.markdown(f"""
+        render_html_clean(f"""
         <div class="metric-card">
             <div class="num" style="color: {'#10b981' if score>=85 else '#ef4444'};">{score}%</div>
             <div class="lbl">{get_ui_text('score_label', lang)}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
     with m2:
-        st.markdown(f"""
+        render_html_clean(f"""
         <div class="metric-card">
             <div class="num" style="color: #0284c7;">{total_count}</div>
             <div class="lbl">{get_ui_text('total_items', lang)}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
     with m3:
-        st.markdown(f"""
+        render_html_clean(f"""
         <div class="metric-card">
             <div class="num" style="color: #10b981;">{pass_count}</div>
             <div class="lbl">{get_ui_text('passed_items', lang)}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
     with m4:
-        st.markdown(f"""
+        render_html_clean(f"""
         <div class="metric-card">
             <div class="num" style="color: {'#ef4444' if defect_count > 0 else '#10b981'};">{defect_count}</div>
             <div class="lbl">{get_ui_text('failed_items', lang)}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
     with m5:
         side_p = quantities.get("side_panels_detected", 2)
-        st.markdown(f"""
+        render_html_clean(f"""
         <div class="metric-card">
             <div class="num" style="color: {'#10b981' if side_p==2 else '#ef4444'};">{side_p} / 2</div>
             <div class="lbl">ACM Panels</div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -599,7 +689,6 @@ if st.session_state.audit_results:
     with tab_master:
         st.markdown(f"### 📋 {get_ui_text('audit_results_title', lang)}")
         
-        # Side & Status Filter Controls for easy navigation
         col_nav1, col_nav2 = st.columns([6, 4])
         with col_nav1:
             side_options = [
@@ -640,8 +729,19 @@ if st.session_state.audit_results:
         elif selected_status_filter == "correct":
             filtered_items = [item for item in filtered_items if item.get("status") == "PASS"]
 
-        # Render the Master Table
-        st.markdown(render_checklist_html_table(filtered_items, current_lang=lang, show_side=(selected_side_key == "all")), unsafe_allow_html=True)
+        # Render the Master Table (Clean Table Format - No Code Boxes)
+        table_html = render_checklist_html_table(filtered_items, current_lang=lang, show_side=(selected_side_key == "all"))
+        render_html_clean(table_html)
+
+        # Show Unauthorized Markings Table if detected
+        if unauth_marks:
+            unauth_html = render_unauthorized_markings_table(unauth_marks, lang)
+            render_html_clean(unauth_html)
+
+        # Show Rear View Complete Text Readout
+        if rear_texts:
+            rear_tbl_html = render_rear_text_table(rear_texts, lang)
+            render_html_clean(rear_tbl_html)
 
     # Tab 2: Front View
     with tab_front:
@@ -653,7 +753,8 @@ if st.session_state.audit_results:
             else:
                 st.info("No front photo uploaded")
         with col_tbl:
-            st.markdown(render_checklist_html_table(data.get("front_checks", []), current_lang=lang, show_side=False), unsafe_allow_html=True)
+            tbl_front = render_checklist_html_table(data.get("front_checks", []), current_lang=lang, show_side=False)
+            render_html_clean(tbl_front)
 
     # Tab 3: Left Side
     with tab_left:
@@ -665,7 +766,8 @@ if st.session_state.audit_results:
             else:
                 st.info("No left photo uploaded")
         with col_tbl:
-            st.markdown(render_checklist_html_table(data.get("left_checks", []), current_lang=lang, show_side=False), unsafe_allow_html=True)
+            tbl_left = render_checklist_html_table(data.get("left_checks", []), current_lang=lang, show_side=False)
+            render_html_clean(tbl_left)
 
     # Tab 4: Right Side
     with tab_right:
@@ -677,7 +779,8 @@ if st.session_state.audit_results:
             else:
                 st.info("No right photo uploaded")
         with col_tbl:
-            st.markdown(render_checklist_html_table(data.get("right_checks", []), current_lang=lang, show_side=False), unsafe_allow_html=True)
+            tbl_right = render_checklist_html_table(data.get("right_checks", []), current_lang=lang, show_side=False)
+            render_html_clean(tbl_right)
 
     # Tab 5: Rear Gate
     with tab_back:
@@ -689,7 +792,11 @@ if st.session_state.audit_results:
             else:
                 st.info("No back photo uploaded")
         with col_tbl:
-            st.markdown(render_checklist_html_table(data.get("back_checks", []), current_lang=lang, show_side=False), unsafe_allow_html=True)
+            tbl_back = render_checklist_html_table(data.get("back_checks", []), current_lang=lang, show_side=False)
+            render_html_clean(tbl_back)
+            if rear_texts:
+                rear_tbl_html = render_rear_text_table(rear_texts, lang)
+                render_html_clean(rear_tbl_html)
 
     # Tab 6: Official Certificate & Print
     with tab_report:
@@ -724,13 +831,13 @@ if st.session_state.audit_results:
                 use_container_width=True
             )
         
-        st.components.v1.html(report_html, height=750, scrolling=True)
+        st.components.v1.html(report_html, height=800, scrolling=True)
 
 else:
-    st.markdown("""
+    render_html_clean("""
     <div style="text-align: center; padding: 40px; color: #64748b; background: #f8fafc; border-radius: 10px; border: 1px dashed #cbd5e1;">
         <div style="font-size: 40px; margin-bottom: 10px;">🚛</div>
         <div style="font-size: 16px; font-weight: 600;">No active inspection running</div>
         <div style="font-size: 13px;">Upload 4 photos above or click <strong>'Load All 4 Sample Photos'</strong> to start.</div>
     </div>
-    """, unsafe_allow_html=True)
+    """)

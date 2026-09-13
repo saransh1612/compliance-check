@@ -78,7 +78,7 @@ def generate_html_report(
             rows_html += f"""
             <tr>
                 <td style="font-weight:700; color:#0f172a;">
-                    {loc['name']}<br><small style="color:#64748b; font-weight:normal;">Rule: <code>{loc['id']}</code></small>
+                    {loc['name']}
                 </td>
                 <td style="text-align:center; vertical-align:middle;">{badge}</td>
                 <td style="color:#14532d; background:#f0fdf4; font-size:12px; line-height:1.45; border-left:2px solid #10b981;">
@@ -317,10 +317,11 @@ def generate_html_report(
             padding-top: 20px;
             border-top: 1px dashed #cbd5e1;
             font-size: 12px;
+            gap: 16px;
         }}
         .sig-block {{
             text-align: center;
-            width: 200px;
+            flex: 1;
         }}
         .sig-line {{
             border-bottom: 1px solid #475569;
@@ -486,18 +487,23 @@ def generate_html_report(
         <div class="footer-signatures">
             <div class="sig-block">
                 <div class="sig-line"></div>
-                <strong>Transporter Driver / Representative</strong><br>
-                <span>Acknowledgment of Audit</span>
+                <strong style="font-size:14px; color:#0f172a;">Driver</strong><br>
+                <span style="color:#64748b; font-size:11px;">(गाड़ी चालक / চালক)</span>
             </div>
             <div class="sig-block">
                 <div class="sig-line"></div>
-                <strong>{auditor}</strong><br>
-                <span>Inspecting Safety Officer (BPCL)</span>
+                <strong style="font-size:14px; color:#0f172a;">Inspector</strong><br>
+                <span style="color:#64748b; font-size:11px;">(निरीक्षक / পরিদর্শক)</span>
             </div>
             <div class="sig-block">
                 <div class="sig-line"></div>
-                <strong>Depot / Plant Manager</strong><br>
-                <span>Dispatch Clearance</span>
+                <strong style="font-size:14px; color:#0f172a;">Officer</strong><br>
+                <span style="color:#64748b; font-size:11px;">(अधिकारी / কর্মকর্তা)</span>
+            </div>
+            <div class="sig-block">
+                <div class="sig-line"></div>
+                <strong style="font-size:14px; color:#0f172a;">Munshi</strong><br>
+                <span style="color:#64748b; font-size:11px;">(मुंशी / মুন্সী)</span>
             </div>
         </div>
     </div>

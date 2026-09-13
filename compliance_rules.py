@@ -79,10 +79,18 @@ COMPLIANCE_CHECKLIST: Dict[str, List[Dict[str, Any]]] = {
         {
             "id": "F5_FRONT_NUMBER_PLATE",
             "name": "Registration Number Plate (Front)",
-            "spec": "Official high security / legible vehicle registration number plate mounted securely on front bumper.",
+            "spec": "Official high security / legible vehicle registration number plate mounted securely on front bumper per MV Act.",
             "critical": True,
             "keywords": [],
             "element": "Front License Plate"
+        },
+        {
+            "id": "F6_UNAUTHORIZED_MARKINGS",
+            "name": "Extraneous / Unauthorized Signs, Symbols & Markings (Front)",
+            "spec": "Strictly NO unauthorized text, religious symbols, private slogans, mobile numbers, or unapproved stickers permitted on windshield, front cabin, or grill per BPCL fleet guidelines. Only official BPCL branding and statutory labels allowed.",
+            "critical": False,
+            "keywords": ["Horn", "OK", "Please"],
+            "element": "Front Unauthorized Markings Audit"
         }
     ],
     "left": [
@@ -97,7 +105,7 @@ COMPLIANCE_CHECKLIST: Dict[str, List[Dict[str, Any]]] = {
         {
             "id": "L2_SIDE_PANEL_ENGLISH",
             "name": "Side Main Panel in English ('Bharat Petroleum')",
-            "spec": "Size 4200 mm x 900 mm ACM board cladded with staggered pop rivets. Features BPCL roundel on left, blue English text 'Bharat Petroleum', and top/bottom yellow-blue wave ribbons (Option 2B).",
+            "spec": "Size 4200 mm x 900 mm ACM board cladded with staggered pop rivets. Features BPCL roundel on left, blue English text 'Bharat Petroleum' (length 2700 mm), and top/bottom yellow-blue wave ribbons (Option 2B).",
             "critical": True,
             "keywords": ["Bharat Petroleum"],
             "element": "Left Side ACM Panel (English)"
@@ -117,6 +125,14 @@ COMPLIANCE_CHECKLIST: Dict[str, List[Dict[str, Any]]] = {
             "critical": False,
             "keywords": [],
             "element": "Cage Frame and Clamps"
+        },
+        {
+            "id": "L5_UNAUTHORIZED_MARKINGS",
+            "name": "Extraneous / Unauthorized Signs, Symbols & Markings (Left Side)",
+            "spec": "Strictly NO unauthorized commercial paintings, private transporter phone numbers, religious symbols, decorative art, or extraneous slogans permitted on left side body or cabin.",
+            "critical": False,
+            "keywords": [],
+            "element": "Left Unauthorized Markings Audit"
         }
     ],
     "right": [
@@ -131,7 +147,7 @@ COMPLIANCE_CHECKLIST: Dict[str, List[Dict[str, Any]]] = {
         {
             "id": "R2_SIDE_PANEL_HINDI",
             "name": "Side Main Panel in Hindi ('भारत पेट्रोलियम')",
-            "spec": "Size 4200 mm x 900 mm ACM board cladded with staggered pop rivets. Features Devanagari Hindi text 'भारत पेट्रोलियम' in blue with BPCL emblem, and top/bottom yellow-blue wave ribbons (Option 2B).",
+            "spec": "Size 4200 mm x 900 mm ACM board cladded with staggered pop rivets. Features Devanagari Hindi text 'भारत पेट्रोलियम' (length 2450 mm) in blue with BPCL emblem, and top/bottom yellow-blue wave ribbons (Option 2B).",
             "critical": True,
             "keywords": ["भारत पेट्रोलियम"],
             "element": "Right Side ACM Panel (Hindi)"
@@ -151,6 +167,14 @@ COMPLIANCE_CHECKLIST: Dict[str, List[Dict[str, Any]]] = {
             "critical": False,
             "keywords": [],
             "element": "Cage Frame"
+        },
+        {
+            "id": "R5_UNAUTHORIZED_MARKINGS",
+            "name": "Extraneous / Unauthorized Signs, Symbols & Markings (Right Side)",
+            "spec": "Strictly NO unauthorized commercial paintings, private slogans, religious symbols, decorative stickers, or unapproved text on right side body or driver cabin door.",
+            "critical": False,
+            "keywords": [],
+            "element": "Right Unauthorized Markings Audit"
         }
     ],
     "back": [
@@ -165,7 +189,7 @@ COMPLIANCE_CHECKLIST: Dict[str, List[Dict[str, Any]]] = {
         {
             "id": "B2_REAR_CLASS_LABEL_REFLECTORS",
             "name": "Rear Class 2 Diamond & Safety Reflective Striping",
-            "spec": "Class 2 Flammable Gas diamond (integrated or separate 250x250mm) and high-visibility reflective red/white warning tape on rear under-run protection / bumper.",
+            "spec": "Class 2 Flammable Gas diamond (size 250 mm x 250 mm) and high-visibility reflective red/white warning tape across rear under-run protection / bumper.",
             "critical": True,
             "keywords": ["2"],
             "element": "Rear Safety Diamond & Reflectors"
@@ -185,6 +209,22 @@ COMPLIANCE_CHECKLIST: Dict[str, List[Dict[str, Any]]] = {
             "critical": True,
             "keywords": [],
             "element": "Rear Mesh Gate"
+        },
+        {
+            "id": "B5_REAR_ALL_TEXT_AUDIT",
+            "name": "Rear View Full Text & Signage Detection",
+            "spec": "Comprehensive detection and verification of ALL text, numbers, and signs visible on the rear view. Must contain only authorized BPCL statutory text. All other written text must be identified and cataloged.",
+            "critical": False,
+            "keywords": [],
+            "element": "Rear Text Readout Inventory"
+        },
+        {
+            "id": "B6_UNAUTHORIZED_MARKINGS",
+            "name": "Extraneous / Unauthorized Signs, Symbols & Markings (Rear Gate)",
+            "spec": "Strictly NO unauthorized slogans (e.g. 'Horn OK Please', 'Buri Nazar Wale...', 'Use Dipper At Night'), religious symbols (Om, Swastika, Cross), private contact numbers, or decorative art permitted on rear gate or bumper.",
+            "critical": False,
+            "keywords": ["Horn", "OK", "Please"],
+            "element": "Rear Unauthorized Markings Audit"
         }
     ]
 }
